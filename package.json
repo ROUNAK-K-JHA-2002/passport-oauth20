@@ -1,0 +1,22 @@
+{
+  "name": "passport-oauth20",
+  "version": "1.0.0",
+  "description": "Passport Js O-Auth-2.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ROUNAK-K-JHA-2002/passport-oauth20.git"
+  },
+  "author": "Dextrix",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ROUNAK-K-JHA-2002/passport-oauth20/issues"
+  },
+  "homepage": "https://github.com/ROUNAK-K-JHA-2002/passport-oauth20#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
