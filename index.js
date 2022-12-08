@@ -4,20 +4,24 @@ const express =  require('express');
 const passport = require('passport');
 const session = require('express-session')
 const authStrategy = require('passport-oauth').OAuth2Strategy
+require('dotenv').config();
 const app = express();
 
-app.use(session({ secret: 'cats', resave: false, saveUninitialized: true }));
+
+app.use(session({ secret:process.env.SESSIONSECRET, resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 
 //Declearing variables
-const port = 5000;
-const clientID = 'sampleclient';
-const clientSecret = 'secret';
+const port = process.env.PORT || 5000;
+const clientID = process.env.CLIENTID;
+const clientSecret = process.env.CLIENTSECRET;
 let token ='sampletoken'
 var redirectUri = `http://127.0.0.1:${port}/auth/tala/callback`
 var authorizationURL = `http://b.pinggy.io:8081/oauth2/authorize`
 var tokenUri = `http://b.pinggy.io:8081/oauth2/token`
+var user;
+var id_token;
 
 
 passport.use('provider' , new authStrategy({
@@ -27,31 +31,29 @@ passport.use('provider' , new authStrategy({
     tokenURL : tokenUri,
     callbackURL : redirectUri,
 },
-function(accessToken, refreshToken, profile, done) {
-    console.log("accessToken " + accessToken)
-    console.log("refreshToken " + refreshToken)
-    console.log("profile " + JSON.stringify(profile))
-    return done(null,profile)
+function user(accessToken, refreshToken,idToken ,user, done) {
+    id_token = idToken.id_token;
+    console.log(user)
+    return done(null,user)
   }))
+  
 
-
-//Routes
-app.get('/protected' ,(req,res)=>{
-    res.send("Hello");
+  
+  
+  //Routes
+  app.get('/protected' ,(req,res)=>{
+  console.log(id_token)
+  const userInfoEncoded = id_token.split('.')
+  const userInfoDecoded = Buffer.from(userInfoEncoded[1],'base64').toString()
+  const userEmail = JSON.parse(userInfoDecoded).sub
+  console.log(userEmail)
+  
+    res.send(` Hello <h2>${userEmail}</h2> `);
 })
 app.get('/auth/tala',passport.authenticate('provider',{scope : ['openid']}))
 
-// app.get('/auth/tala/callback',
-//     (req,res)=>{
-//          token = req.query.code;
-//          tokenUri = `http://b.pinggy.io:8081/oauth2/token?client_id=${clientID}&client_secret=${clientSecret}&grant_type=authorization_code&code=${req.query.code}&redirect_uri=${redirectUri}`
-//       console.log(tokenUri)
-//     },
-//     passport.authenticate('oauth2', {successRedirect:'/protected', failureRedirect: '/auth/failed' }),(req,res)=>{
-//      console.log("Login Successful")
-// })
-app.get('/auth/tala/callback',passport.authenticate('provider', { successRedirect: '/protected',
-                                      failureRedirect: '/auth/failure' }));
+
+app.get('/auth/tala/callback',passport.authenticate('provider', { successRedirect: '/protected',failureRedirect: '/auth/failure' }));
 
 
 
@@ -76,9 +78,10 @@ app.get('/auth/failure', (req, res) => {
 
 
 app.get('/',(req , res)=>{
-    res.send('<a href="/auth/tala">Authenticate </a>')
+    res.send('<a href="/auth/tala">Authenticate with passport-tala</a>')
 })
 
 app.listen(port,()=> console.log("Server running on http://127.0.0.1:5000"))
 
 
+module.exports.app = app;
