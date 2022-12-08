@@ -16,14 +16,12 @@ app.use(passport.session());
 const port = process.env.PORT || 5000;
 const clientID = process.env.CLIENTID;
 const clientSecret = process.env.CLIENTSECRET;
-let token ='sampletoken'
 var redirectUri = `http://127.0.0.1:${port}/auth/tala/callback`
 var authorizationURL = `http://b.pinggy.io:8081/oauth2/authorize`
 var tokenUri = `http://b.pinggy.io:8081/oauth2/token`
-var user;
 var id_token;
 
-
+//Connection with Auth URL
 passport.use('provider' , new authStrategy({
     clientID : clientID,
     clientSecret : clientSecret,
@@ -38,6 +36,13 @@ function user(accessToken, refreshToken,idToken ,user, done) {
   }))
   
 
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  done(null, user);
+});
   
   
   //Routes
@@ -54,21 +59,6 @@ app.get('/auth/tala',passport.authenticate('provider',{scope : ['openid']}))
 
 
 app.get('/auth/tala/callback',passport.authenticate('provider', { successRedirect: '/protected',failureRedirect: '/auth/failure' }));
-
-
-
-//Connection with Auth URL
-
-
-
-
-passport.serializeUser(function(user, done) {
-  done(null, user);
-});
-
-passport.deserializeUser(function(user, done) {
-  done(null, user);
-});
 
 
 
